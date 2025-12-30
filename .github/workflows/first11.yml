@@ -1,0 +1,37 @@
+name: Deploy Backend API
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Deploy to VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 20.127.146.150
+          username: azureuser
+          key: ${{ secrets.AZURE_SSH_KEY }}
+          script: |
+            cd ~
+            rm -rf backend-api
+            git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git backend-api
+            cd backend-api
+            npm install
+            pm2 stop backend || true
+            pm2 start index.js --name backend
